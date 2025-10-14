@@ -1,6 +1,8 @@
 import flet as ft
-from Docente.docentes_view import DocentesView  # ← importar aquí   
+
 from Persona.personas_view import PersonasView  # ← importar aquí
+from Docente.docentes_view import DocentesView
+from Usuario.usuarios_view import UsuariosView
 class DashboardView(ft.Container):
     def __init__(self, page, cambiar_vista):
         super().__init__(expand=True)
@@ -70,6 +72,9 @@ class DashboardView(ft.Container):
         if nombre_tabla == "Docentes":
             docentes_vista = DocentesView(self.page, volver_atras=lambda: self.cambiar_vista(DashboardView(self.page, self.cambiar_vista)))
             self.cambiar_vista(docentes_vista)
+        if nombre_tabla =="Usuarios":
+            usuarios_vista = UsuariosView(self.page, volver_atras=lambda: self.cambiar_vista(DashboardView(self.page, self.cambiar_vista)))
+            self.cambiar_vista(usuarios_vista)
         else:
             dlg = ft.AlertDialog(
                 title=ft.Text("Tabla no implementada"),
@@ -79,4 +84,3 @@ class DashboardView(ft.Container):
             self.page.dialog = dlg
             dlg.open = True
             self.page.update()
-        

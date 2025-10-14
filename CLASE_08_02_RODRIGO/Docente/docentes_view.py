@@ -1,4 +1,4 @@
-
+# docentes_view.py
 import flet as ft
 from conexion import ConexionDB
 
@@ -9,22 +9,26 @@ class DocentesView(ft.Container):
         self.volver_atras = volver_atras
         self.conexion = ConexionDB()
 
-        self.titulo = ft.Text("👥 Gestión de Personas", size=22, weight="bold")
+        # 🔹 Título principal
+        self.titulo = ft.Text("👨‍🏫 Gestión de Docentes", size=22, weight="bold")
 
+        # 🔹 Tabla para mostrar los docentes
         self.tabla = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text("ID")),
-                ft.DataColumn(ft.Text("Nombres")),
-                ft.DataColumn(ft.Text("Apellidos")),
-                ft.DataColumn(ft.Text("DNI")),
-                ft.DataColumn(ft.Text("Teléfono")),
+                ft.DataColumn(ft.Text("Persona ID")),
+                ft.DataColumn(ft.Text("Código Docente")),
+                ft.DataColumn(ft.Text("Activo")),
+                ft.DataColumn(ft.Text("Especialidad ID")),
             ],
             rows=[]
         )
 
+        # 🔹 Botones de acción
         self.btn_volver = ft.ElevatedButton("⬅️ Volver", on_click=lambda e: self.volver_atras())
-        self.btn_actualizar = ft.ElevatedButton("🔄 Actualizar", on_click=lambda e: self.cargar_personas())
+        self.btn_actualizar = ft.ElevatedButton("🔄 Actualizar", on_click=lambda e: self.cargar_docentes())
 
+        # 🔹 Estructura de la vista
         self.content = ft.Column(
             [
                 self.titulo,
@@ -36,34 +40,42 @@ class DocentesView(ft.Container):
             scroll=ft.ScrollMode.AUTO
         )
 
-        # cargar datos iniciales
-        self.cargar_personas()
+        # Cargar los datos iniciales
+        self.cargar_docentes()
 
-    # Carga de datos desde MySQL
-    def cargar_personas(self):
+    # 🔹 Método para cargar docentes desde la base de datos
+    def cargar_docentes(self):
         conexion = self.conexion.conectar()
         if conexion:
             cursor = conexion.cursor()
             try:
-                cursor.execute("SELECT persona_id, nombres, apellidos, numero_documento, telefono FROM personas")
+                # Consulta directa a la tabla docentes
+                cursor.execute("""
+                    SELECT docente_id, persona_id, codigo_docente, activo, especialidad_id
+                    FROM docentes
+                """)
                 resultados = cursor.fetchall()
 
+                # Limpiamos las filas anteriores
                 self.tabla.rows.clear()
+
+                # Agregamos nuevas filas
                 for fila in resultados:
                     self.tabla.rows.append(
                         ft.DataRow(
                             cells=[
                                 ft.DataCell(ft.Text(str(fila[0]))),
-                                ft.DataCell(ft.Text(fila[1])),
+                                ft.DataCell(ft.Text(str(fila[1]))),
                                 ft.DataCell(ft.Text(fila[2])),
-                                ft.DataCell(ft.Text(fila[3])),
-                                ft.DataCell(ft.Text(fila[4])),
+                                ft.DataCell(ft.Text(str(fila[3]))),
+                                ft.DataCell(ft.Text(str(fila[4]))),
                             ]
                         )
                     )
                 self.page.update()
+                print("✅ Datos de docentes cargados correctamente")
 
             except Exception as e:
-                print(f"❌ Error al cargar personas: {e}")
+                print(f"❌ Error al cargar docentes: {e}")
             finally:
                 self.conexion.cerrar(conexion)

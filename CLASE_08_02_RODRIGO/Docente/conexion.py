@@ -5,9 +5,12 @@ class ConexionDB:
     def __init__(self):
         self.host = "localhost"
         self.user = "root"
-        self.password = "1234"
+        self.password = ""
         self.database = "Horarios_Marello"
 
+    # ──────────────────────────────
+    # CONECTAR Y CERRAR BASE DE DATOS
+    # ──────────────────────────────
     def conectar(self):
         try:
             conexion = mysql.connector.connect(
@@ -28,32 +31,65 @@ class ConexionDB:
             conexion.close()
             print("🔒 Conexión cerrada correctamente")
 
-    # 🔹 Nueva función: Login de usuario
-    def login_usuario(self, nombre_usuario, clave):
+    # ──────────────────────────────
+    # OBTENER LISTA DE DOCENTES
+    # ──────────────────────────────
+    def obtener_docentes(self):
         conexion = self.conectar()
         if not conexion:
-            return {"status": False, "mensaje": "Error al conectar con la base de datos"}
+            return None
 
         try:
             cursor = conexion.cursor(dictionary=True)
-            query = "SELECT * FROM usuarios WHERE nombre_usuario = %s AND hashed_pass = %s"
-            cursor.execute(query, (nombre_usuario, clave))
-            usuario = cursor.fetchone()
+            query = """
+            SELECT 
+                d.docente_id,
+                d.persona_id,
+                d.codigo_docente,
+                CASE 
+                    WHEN d.activo = 1 THEN 'Sí'
+                    WHEN d.activo = 0 THEN 'No'
+                    ELSE d.activo
+                END AS activo,
+                e.nombre AS especialidad
+            FROM docentes d
+            LEFT JOIN especialidades e ON d.especialidad_id = e.especialidad_id
+            ORDER BY d.docente_id ASC
+            """
+            cursor.execute(query)
+            docentes = cursor.fetchall()
+            return docentes
 
-            if usuario:
-                return {"status": True, "mensaje": "Login exitoso", "data": usuario}
-            else:
-                return {"status": False, "mensaje": "Usuario o contraseña incorrectos"}
         except Error as e:
-            return {"status": False, "mensaje": f"Error en la consulta: {e}"}
+            print(f"❌ Error al obtener docentes: {e}")
+            return None
         finally:
             if 'cursor' in locals():
                 cursor.close()
             self.cerrar(conexion)
 
+    # ──────────────────────────────
+    # AGREGAR NUEVO DOCENTE (opcional)
+    # ──────────────────────────────
+    def agregar_docente(self, persona_id, codigo_docente, activo, especialidad_id):
+        conexion = self.conectar()
+        if not conexion:
+            return False
 
-# --- Prueba directa (debug manual) ---
-if __name__ == "__main__":
-    db = ConexionDB()
-    resultado = db.login_usuario("admin", "1234")
-    print(resultado)
+        try:
+            cursor = conexion.cursor()
+            query = """
+            INSERT INTO docentes (persona_id, codigo_docente, activo, especialidad_id, creado_en)
+            VALUES (%s, %s, %s, %s, NOW())
+            """
+            cursor.execute(query, (persona_id, codigo_docente, activo, especialidad_id))
+            conexion.commit()
+            print("✅ Docente agregado correctamente")
+            return True
+        except Error as e:
+            print(f"❌ Error al agregar docente: {e}")
+            return False
+        finally:
+            if 'cursor' in locals():
+                cursor.close()
+            self.cerrar(conexion)
