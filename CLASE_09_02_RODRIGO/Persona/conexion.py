@@ -28,7 +28,7 @@ class ConexionDB:
             conexion.close()
             print("🔒 Conexión cerrada correctamente")
 
-    # 🔹 Función: Login de usuario
+    # 🔹 Nueva función: Login de usuario
     def login_usuario(self, nombre_usuario, clave):
         conexion = self.conectar()
         if not conexion:
@@ -46,29 +46,6 @@ class ConexionDB:
                 return {"status": False, "mensaje": "Usuario o contraseña incorrectos"}
         except Error as e:
             return {"status": False, "mensaje": f"Error en la consulta: {e}"}
-        finally:
-            if 'cursor' in locals():
-                cursor.close()
-            self.cerrar(conexion)
-
-    # 🔹 NUEVA FUNCIÓN: Actualizar persona
-    def actualizar_persona(self, persona_id, nombres, apellidos, numero_documento, telefono):
-        conexion = self.conectar()
-        if not conexion:
-            return {"status": False, "mensaje": "Error al conectar con la base de datos"}
-
-        try:
-            cursor = conexion.cursor()
-            query = """
-                UPDATE personas
-                SET nombres=%s, apellidos=%s, numero_documento=%s, telefono=%s
-                WHERE persona_id=%s
-            """
-            cursor.execute(query, (nombres, apellidos, numero_documento, telefono, persona_id))
-            conexion.commit()
-            return {"status": True, "mensaje": "Persona actualizada correctamente"}
-        except Error as e:
-            return {"status": False, "mensaje": f"Error al actualizar persona: {e}"}
         finally:
             if 'cursor' in locals():
                 cursor.close()
