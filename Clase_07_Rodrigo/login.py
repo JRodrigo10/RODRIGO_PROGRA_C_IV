@@ -1,41 +1,41 @@
 import flet as ft
-import usuario
-import administrador
+import alumno_vista as alumno  
+import docente
 
-users = {
-    "admin": {"password": "1234", "role": "admin"},
-    "jrodrigo": {"password": "2006", "role": "user"}
+usuarios = {
+    "docente.com": {"password": "1234", "rol": "docente"},
+    "alumno.com": {"password": "2006", "rol": "alumno"}
 }
 
 def main(page: ft.Page):
-    page.title = "Login"
+    page.title = "Login con Correo"
     page.window.width = 400
     page.window.height = 300
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
-    username = ft.TextField(label="Usuario", width=300)
+    correo = ft.TextField(label="Correo", width=300)
     password = ft.TextField(label="Contraseña", password=True, can_reveal_password=True, width=300)
     mensaje = ft.Text()
 
     def login_click(e):
-        user = username.value
+        email = correo.value
         pwd = password.value
 
-        if user in users and users[user]["password"] == pwd:
-            role = users[user]["role"]
-            if role == "admin":
-                administrador.mostrar_admin(page)  # manda a admin.py
+        if email in usuarios and usuarios[email]["password"] == pwd:
+            rol = usuarios[email]["rol"]
+            if rol == "docente":
+                docente.mostrar_docente(page)
             else:
-                usuario.mostrar_user(page)        # manda a usuario.py
+                alumno.mostrar_alumno(page)
         else:
-            mensaje.value = "❌ Usuario o contraseña incorrectos"
+            mensaje.value = "❌ Correo o contraseña incorrectos"
             page.update()
 
     page.add(
         ft.Column(
             [
-                ft.Text("🔐 Iniciar Sesión", size=20, weight=ft.FontWeight.BOLD),
-                username,
+                ft.Text("📧 Iniciar Sesión", size=20, weight=ft.FontWeight.BOLD),
+                correo,
                 password,
                 ft.ElevatedButton("Iniciar sesión", on_click=login_click),
                 mensaje

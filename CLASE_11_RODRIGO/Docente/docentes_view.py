@@ -3,9 +3,19 @@ from conexion import ConexionDB
 from acciones.editar_docente_view import EditarDocenteView
 
 class DocentesView(ft.Container):
+    """
+    Vista para gestión de docentes.
+    Args:
+        page: Objeto Page.
+        volver_atras: función a ejecutar al pulsar volver.
+    Ejemplo:
+        DocentesView(page, volver_atras=lambda: ...)
+    """
     def __init__(self, page, volver_atras):
         super().__init__(expand=True)
         self.page = page
+        if not callable(volver_atras):
+            raise ValueError('El argumento volver_atras debe ser una función (callable), pero se recibió: {}'.format(type(volver_atras)))
         self.volver_atras = volver_atras
         self.conexion = ConexionDB()
 
@@ -165,9 +175,14 @@ class DocentesView(ft.Container):
     # =============================
     def mostrar_formulario_editar(self, docente_id):
         print(f"🧩 Abriendo edición para docente {docente_id}")
-        editar_vista = EditarDocenteView(self.page, docente_id)
+        editar_vista = EditarDocenteView(self.page, docente_id, volver_atras=lambda: self.recargar_y_mantener_volver())
         self.page.clean()
         self.page.add(editar_vista)
+        self.page.update()
+
+    def recargar_y_mantener_volver(self):
+        self.page.clean()
+        self.page.add(DocentesView(self.page, volver_atras=self.volver_atras))
         self.page.update()
 
     # =============================
